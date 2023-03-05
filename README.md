@@ -4,6 +4,8 @@
 
 # LED Class Use Instruction
 
+Project Using STM32L432KC as Example. Test hardware is NUCLEO-L432KC.
+
 ## PWM
 
 - `Prescaler` x `Overflow` = `Clock Source` = `System Clock` / `Desired PWM Frequency`
