@@ -2,20 +2,16 @@
 
 /**
  * @brief Construct a new LED::LED object
+ * @param level britness % relative to PWM period value. Period of 100 works best.
+ * @param scale global dimmer for level
+ * @param freq PWM Update Event interrupt frequency (1KHz works good)
+ * @warning setCCR(&htimX->CCRX) is required to run.
  *
- * Light max brightness level set at 100, scale set at. Scale is used to divide
- * brightness.
- *
- * @warning Initialize LED::LED object before main(). Then port must be set
- * after HAL_TIM_PWM_Start() using setPort().
- * @see setPort() for setting HAL PWM register
- * @see setScale() to set scale/divider of brightness
- * @see setLevel() to set brightness base value
  */
 LED::LED(uint16_t level, uint16_t scale, uint16_t freq) {
     m_level = level;
     m_scale = scale;
-	m_ext_frequency = freq;
+    m_ext_frequency = freq;
     m_breath_itr = 0;
 }
 
@@ -68,6 +64,10 @@ void LED::toggle() {
     }
 }
 
+/**
+ * @brief Programmable On/Off setter.
+ * @param state on=true, off=false
+ */
 void LED::set(bool state) {
     if (state)
         on();
@@ -77,7 +77,6 @@ void LED::set(bool state) {
 
 /**
  * @brief Set brightness scale.
- *
  * @param value
  */
 void LED::setScale(uint16_t value) { m_scale = value; }
@@ -102,38 +101,37 @@ void LED::half() { *m_CCR = m_level / m_scale / 2; }
  * Run this in HAL_TIM_PeriodElapsedCallback() for the 20Hz timer.
  */
 void LED::scheduler() {
-	if(m_schedule == 0) {
-		// Breathing LED Logic
-		if (m_breath_toggle) {
-			if (++m_breath_itr < 25)
-				m_level = m_breath[m_breath_itr];
-			else
-				m_breath_itr = 0;
+    if (m_schedule == 0) {
+        // Breathing LED Logic
+        if (m_breath_toggle) {
+            if (++m_breath_itr < 25)
+                m_level = m_breath[m_breath_itr];
+            else
+                m_breath_itr = 0;
 
-			*m_CCR = m_level / m_scale;
-		}
+            *m_CCR = m_level / m_scale;
+        }
 
-		// Slow Blinking LED Logic
-		if (m_blink_toggle) {
-			if (m_blink_timer > 5) {
-				toggle();
-				m_blink_timer = 0;
-			} else
-				m_blink_timer++;
-		}
+        // Slow Blinking LED Logic
+        if (m_blink_toggle) {
+            if (m_blink_timer > 5) {
+                toggle();
+                m_blink_timer = 0;
+            } else
+                m_blink_timer++;
+        }
 
-		// Fast Blinking LED Logic
-		if (m_rapid_toggle) {
-			if (m_rapid_timer > 1) {
-				toggle();
-				m_rapid_timer = 0;
-			} else
-				m_rapid_timer++;
-		}
-	}
-	if(m_schedule++ > (m_ext_frequency/20)) m_schedule = 0;
+        // Fast Blinking LED Logic
+        if (m_rapid_toggle) {
+            if (m_rapid_timer > 1) {
+                toggle();
+                m_rapid_timer = 0;
+            } else
+                m_rapid_timer++;
+        }
+    }
+    if (m_schedule++ > (m_ext_frequency / 20)) m_schedule = 0;  // making 20Hz schedule
 }
-
 
 /**
  * @brief Start breathing effect.

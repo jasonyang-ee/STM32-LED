@@ -5,6 +5,4 @@
 
 extern LED led_user;
 
-
-
-#endif    /* CORE_INC_INSTANCES */
+#endif /* CORE_INC_INSTANCES */

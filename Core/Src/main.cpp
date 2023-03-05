@@ -55,11 +55,10 @@ int main(void) {
     HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 
     led_user.setCCR(&htim2.Instance->CCR2);
-    led_user.blink();
-	led_user.on();
+    led_user.breath();
     while (1) {
-		// HAL_Delay(50);
-		// led_user.scheduler();
+        // HAL_Delay(50);
+        // led_user.scheduler();
     }
 }
 
@@ -77,8 +76,7 @@ void SystemClock_Config(void) {
 
     /** Configure the main internal regulator output voltage
      */
-    if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) !=
-        HAL_OK) {
+    if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK) {
         Error_Handler();
     }
     /** Configure LSE Drive Capability
@@ -88,8 +86,7 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
-    RCC_OscInitStruct.OscillatorType =
-        RCC_OSCILLATORTYPE_LSE | RCC_OSCILLATORTYPE_MSI;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE | RCC_OSCILLATORTYPE_MSI;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     RCC_OscInitStruct.MSIState = RCC_MSI_ON;
     RCC_OscInitStruct.MSICalibrationValue = 0;
@@ -106,8 +103,7 @@ void SystemClock_Config(void) {
     }
     /** Initializes the CPU, AHB and APB buses clocks
      */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
-                                  RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -149,16 +145,14 @@ static void MX_TIM2_Init(void) {
     }
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) !=
-        HAL_OK) {
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK) {
         Error_Handler();
     }
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
     sConfigOC.Pulse = 0;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) !=
-        HAL_OK) {
+    if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK) {
         Error_Handler();
     }
     __HAL_TIM_DISABLE_OCxPRELOAD(&htim2, TIM_CHANNEL_2);
@@ -186,7 +180,6 @@ static void MX_USART2_UART_Init(void) {
         Error_Handler();
     }
 }
-
 
 /**
  * Enable DMA controller clock

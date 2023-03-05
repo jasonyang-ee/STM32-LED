@@ -8,12 +8,10 @@ class LED {
     LED(uint16_t, uint16_t, uint16_t);
     virtual ~LED();
 
-    // Setting
     void setCCR(__IO uint32_t *);
     void setScale(uint16_t);
     void setLevel(uint16_t);
 
-    // Basic
     void on();
     void off();
     void half();
@@ -28,11 +26,11 @@ class LED {
 
    private:
     // Setting
-    __IO uint32_t *m_CCR;    		// Ex: htim3.Instance->CCR2 for Timer3 Channel2
-    uint16_t m_level{100};   		// light level
-    uint16_t m_scale{1};     		// light scale
-	uint16_t m_ext_frequency{20};	// external interrupt frequency
-    uint16_t m_schedule{0};  		// schedule timer
+    __IO uint32_t *m_CCR;          // Ex: htim3.Instance->CCR2 for Timer3 Channel2
+    uint16_t m_level{100};         // light level
+    uint16_t m_scale{1};           // light scale
+    uint16_t m_ext_frequency{20};  // external interrupt frequency
+    uint16_t m_schedule{0};        // schedule timer
 
     // Time Based for 20Hz Scheduling
     bool m_breath_toggle{};
