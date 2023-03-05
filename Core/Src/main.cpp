@@ -33,11 +33,10 @@ static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_DMA_Init(void);
-static void MX_USB_PCD_Init(void);
 
-void HAL_TIM_PeriodElapsedCallback(void);
+void PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
 
-LED led_user{100,1};
+LED led_user{100, 1, 1000};
 
 /**
  * @brief  The application entry point.
@@ -52,18 +51,21 @@ int main(void) {
     MX_TIM2_Init();
     MX_USART2_UART_Init();
     MX_DMA_Init();
-    MX_USB_PCD_Init();
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 
     led_user.setCCR(&htim2.Instance->CCR2);
-
     led_user.blink();
+	led_user.on();
     while (1) {
+		// HAL_Delay(50);
+		// led_user.scheduler();
     }
 }
 
-void HAL_TIM_PeriodElapsedCallback(void) { led_user.scheduler(); }
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
+    if (htim->Instance == TIM2) led_user.scheduler();
+}
 
 /**
  * @brief System Clock Configuration
@@ -79,15 +81,23 @@ void SystemClock_Config(void) {
         HAL_OK) {
         Error_Handler();
     }
+    /** Configure LSE Drive Capability
+     */
+    HAL_PWR_EnableBkUpAccess();
+    __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+    RCC_OscInitStruct.OscillatorType =
+        RCC_OSCILLATORTYPE_LSE | RCC_OSCILLATORTYPE_MSI;
+    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+    RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+    RCC_OscInitStruct.MSICalibrationValue = 0;
+    RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
     RCC_OscInitStruct.PLL.PLLM = 1;
-    RCC_OscInitStruct.PLL.PLLN = 20;
+    RCC_OscInitStruct.PLL.PLLN = 16;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
     RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
     RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -103,9 +113,12 @@ void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) {
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
         Error_Handler();
     }
+    /** Enable MSI Auto calibration
+     */
+    HAL_RCCEx_EnableMSIPLLMode();
 }
 
 /**
@@ -119,9 +132,9 @@ static void MX_TIM2_Init(void) {
     TIM_OC_InitTypeDef sConfigOC = {0};
 
     htim2.Instance = TIM2;
-    htim2.Init.Prescaler = 800 - 1;
+    htim2.Init.Prescaler = 320;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 100 - 1;
+    htim2.Init.Period = 100;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
@@ -174,24 +187,6 @@ static void MX_USART2_UART_Init(void) {
     }
 }
 
-/**
- * @brief USB Initialization Function
- * @param None
- * @retval None
- */
-static void MX_USB_PCD_Init(void) {
-    hpcd_USB_FS.Instance = USB;
-    hpcd_USB_FS.Init.dev_endpoints = 8;
-    hpcd_USB_FS.Init.speed = PCD_SPEED_FULL;
-    hpcd_USB_FS.Init.phy_itface = PCD_PHY_EMBEDDED;
-    hpcd_USB_FS.Init.Sof_enable = DISABLE;
-    hpcd_USB_FS.Init.low_power_enable = DISABLE;
-    hpcd_USB_FS.Init.lpm_enable = DISABLE;
-    hpcd_USB_FS.Init.battery_charging_enable = DISABLE;
-    if (HAL_PCD_Init(&hpcd_USB_FS) != HAL_OK) {
-        Error_Handler();
-    }
-}
 
 /**
  * Enable DMA controller clock

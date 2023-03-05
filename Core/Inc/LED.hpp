@@ -5,7 +5,7 @@
 
 class LED {
    public:
-    LED(uint16_t,uint16_t);
+    LED(uint16_t, uint16_t, uint16_t);
     virtual ~LED();
 
     // Setting
@@ -19,22 +19,25 @@ class LED {
     void half();
     void toggle();
     void set(bool);
-    
+
     void scheduler();
-   
+
     void breath();
     void blink();
     void rapid();
 
    private:
     // Setting
-    __IO uint32_t *m_CCR;	// Ex: htim3.Instance->CCR2 for Timer3 Channel2
-    uint16_t m_level{100};  // light level
-    uint16_t m_scale{1};    // light scale
-	uint16_t m_schedule{0};	// schedule timer
+    __IO uint32_t *m_CCR;    		// Ex: htim3.Instance->CCR2 for Timer3 Channel2
+    uint16_t m_level{100};   		// light level
+    uint16_t m_scale{1};     		// light scale
+	uint16_t m_ext_frequency{20};	// external interrupt frequency
+    uint16_t m_schedule{0};  		// schedule timer
 
     // Time Based for 20Hz Scheduling
-    uint8_t m_status{0};
+    bool m_breath_toggle{};
+    bool m_blink_toggle{};
+    bool m_rapid_toggle{};
 
     uint16_t m_blink_timer{};
     uint16_t m_rapid_timer{};
@@ -44,4 +47,4 @@ class LED {
                              99, 84, 70, 55, 45, 37, 29, 23, 19, 16, 10, 6};
 };
 
-#endif    /* CORE_INC_LED */
+#endif /* CORE_INC_LED */

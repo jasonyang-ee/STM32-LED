@@ -12,10 +12,10 @@
  * @see setScale() to set scale/divider of brightness
  * @see setLevel() to set brightness base value
  */
-LED::LED(uint16_t level, uint16_t scale) {
+LED::LED(uint16_t level, uint16_t scale, uint16_t freq) {
     m_level = level;
     m_scale = scale;
-    m_status = 0b00000000;
+	m_ext_frequency = freq;
     m_breath_itr = 0;
 }
 
@@ -34,11 +34,46 @@ LED::~LED() { *m_CCR = 0; }
  */
 void LED::setCCR(__IO uint32_t *CCR) { m_CCR = CCR; }
 
-// Bitwise operation setting status
-void LED::on() { m_status = 1u; }
-void LED::off() { m_status = 0u; }
-void LED::toggle() { m_status ^= 1u; }
-void LED::set(bool state) { m_status |= (state ? 1u : 0u); }
+/**
+ * @brief Turn on LED using stored brightness and scale.
+ *
+ */
+void LED::on() {
+    *m_CCR = m_level / m_scale;
+    m_breath_toggle = false;
+    m_blink_toggle = false;
+    m_rapid_toggle = false;
+}
+
+/**
+ * @brief Turn off LED.
+ *
+ */
+void LED::off() {
+    *m_CCR = 0;
+    m_breath_toggle = false;
+    m_blink_toggle = false;
+    m_rapid_toggle = false;
+}
+
+/**
+ * @brief Toggle LED on/off state.
+ *
+ */
+void LED::toggle() {
+    if (*m_CCR > 0) {
+        *m_CCR = 0;
+    } else {
+        *m_CCR = m_level / m_scale;
+    }
+}
+
+void LED::set(bool state) {
+    if (state)
+        on();
+    else
+        off();
+}
 
 /**
  * @brief Set brightness scale.
@@ -58,7 +93,7 @@ void LED::setLevel(uint16_t value) { m_level = value; }
  * @brief Set LED max brightness to half.
  *
  */
-void LED::half() { m_level = 50; }
+void LED::half() { *m_CCR = m_level / m_scale / 2; }
 
 /**
  * @brief Use in 20Hz timer interrupt to periodically update LED brightness to
@@ -67,53 +102,50 @@ void LED::half() { m_level = 50; }
  * Run this in HAL_TIM_PeriodElapsedCallback() for the 20Hz timer.
  */
 void LED::scheduler() {
-    if (m_schedule == 0) {
-        switch (m_status) {
-            case 0:  // Solid ON
-                *m_CCR = 0;
-                break;
-            case 1:  // Solid OFF
-                *m_CCR = m_level / m_scale;
-                break;
-            case 2:  // Breathing LED Logic
-                if (++m_breath_itr < 25)
-                    m_level = m_breath[m_breath_itr];
-                else
-                    m_breath_itr = 0;
-                *m_CCR = m_level / m_scale;
-                break;
-            case 4:  // Slow Blinking LED Logic
-                if (m_blink_timer > 5) {
-                    toggle();
-                    m_blink_timer = 0;
-                } else
-                    m_blink_timer++;
-                break;
-            case 8:  // Fast Blinking LED Logic
-                if (m_rapid_timer > 1) {
-                    toggle();
-                    m_rapid_timer = 0;
-                } else
-                    m_rapid_timer++;
-                break;
-        }
-    }
-    if (m_schedule++ > 50) m_schedule = 0;
+	if(m_schedule == 0) {
+		// Breathing LED Logic
+		if (m_breath_toggle) {
+			if (++m_breath_itr < 25)
+				m_level = m_breath[m_breath_itr];
+			else
+				m_breath_itr = 0;
+
+			*m_CCR = m_level / m_scale;
+		}
+
+		// Slow Blinking LED Logic
+		if (m_blink_toggle) {
+			if (m_blink_timer > 5) {
+				toggle();
+				m_blink_timer = 0;
+			} else
+				m_blink_timer++;
+		}
+
+		// Fast Blinking LED Logic
+		if (m_rapid_toggle) {
+			if (m_rapid_timer > 1) {
+				toggle();
+				m_rapid_timer = 0;
+			} else
+				m_rapid_timer++;
+		}
+	}
+	if(m_schedule++ > (m_ext_frequency/20)) m_schedule = 0;
 }
 
-/*
-Toggle 8 Bits Status Code
-        |===  3  =======  2  =======  1  ======== 0 ====|
-Bit		|	Rapid	|	Blink	|	Breath | Solid	|
-        |===============================================|
-*/
 
 /**
  * @brief Start breathing effect.
  *
  * LED breathing turn on. The brightness will change based on scheduler().
  */
-void LED::breath() { m_status = (1u << 2); }
+void LED::breath() {
+    m_breath_toggle = !m_breath_toggle;
+    m_blink_toggle = false;
+    m_rapid_toggle = false;
+    *m_CCR = 0;
+}
 
 /**
  * @brief Start slow blinking.
@@ -121,8 +153,10 @@ void LED::breath() { m_status = (1u << 2); }
  * LED blinking turn on. The on/off will change based on scheduler().
  */
 void LED::blink() {
-    m_status = (1u << 3);
-    setLevel(100);
+    m_blink_toggle = !m_blink_toggle;
+    m_breath_toggle = false;
+    m_rapid_toggle = false;
+    *m_CCR = 0;
 }
 
 /**
@@ -131,6 +165,8 @@ void LED::blink() {
  * Led blinking turn on. The on/off will change based on scheduler().
  */
 void LED::rapid() {
-    m_status = (1u << 4);
-    setLevel(100);
+    m_rapid_toggle = !m_rapid_toggle;
+    m_breath_toggle = false;
+    m_blink_toggle = false;
+    *m_CCR = 0;
 }
