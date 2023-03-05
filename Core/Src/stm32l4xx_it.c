@@ -20,8 +20,9 @@
 
 #include "main.h"
 
-extern TIM_HandleTypeDef htim6;
-extern TIM_HandleTypeDef htim1;
+extern DMA_HandleTypeDef hdma_tim2_up;
+extern TIM_HandleTypeDef htim2;
+extern PCD_HandleTypeDef hpcd_USB_FS;
 
 /**
  * @brief This function handles Non maskable interrupt.
@@ -81,16 +82,19 @@ void PendSV_Handler(void) {}
 /**
  * @brief This function handles System tick timer.
  */
-void SysTick_Handler(void) {}
+void SysTick_Handler(void) { HAL_IncTick(); }
 
 /**
- * @brief This function handles TIM1 update interrupt and TIM16 global
- * interrupt.
+ * @brief This function handles DMA1 channel2 global interrupt.
  */
-void TIM1_UP_TIM16_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
+void DMA1_Channel2_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_tim2_up); }
 
 /**
- * @brief This function handles TIM6 global interrupt, DAC channel1 and channel2
- * underrun error interrupts.
+ * @brief This function handles TIM2 global interrupt.
  */
-void TIM6_DAC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim6); }
+void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
+
+/**
+ * @brief This function handles USB event interrupt through EXTI line 17.
+ */
+void USB_IRQHandler(void) { HAL_PCD_IRQHandler(&hpcd_USB_FS); }

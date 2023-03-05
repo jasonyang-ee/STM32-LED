@@ -14,9 +14,11 @@ regEX
 LED Library:
 
 - PWM
-  - `Prescaler * Overflow = Period-in-Cycles = Clock-cycles-per-Second / Frequency`
+  - `Prescaler * Overflow = Period-in-Cycles = Clock-cycles-per-Second (32MHz) / Frequency (250Hz)`
   - overflow  = 2^bits
   - prescaler * overflow >= period_cycles
+  - 32Mhz / 250Hz / 65535 = prescale = 2
+  - 32Mhz / 250Hz / prescale 2 = overflow (period) = 64000
 ```
 #define CLOCK_CYCLES_PER_SECOND  72000000
 #define MAX_RELOAD               0xFFFF
