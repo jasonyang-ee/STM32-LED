@@ -1,11 +1,11 @@
 [![Build Binary](https://github.com/jasonyang-ee/STM32-LED/actions/workflows/build-all.yml/badge.svg)](https://github.com/jasonyang-ee/STM32-LED/actions/workflows/build-all.yml)
 
 
-# LED Class Use Instruction
+# 1. LED Class Use Instruction
 
 Project Using STM32L432KC as Example. Test hardware is NUCLEO-L432KC.
 
-## PWM
+## 1.1. PWM
 
 - `Prescaler` x `Overflow` = `Clock Source` = `System Clock` / `Desired PWM Frequency`
 
@@ -17,25 +17,25 @@ Project Using STM32L432KC as Example. Test hardware is NUCLEO-L432KC.
 - => `prescaler`: 1-1, `period`: 32000-1, `PWM Frequency`: 1KHz
 - Use `clock source`: `internal clock (APBx)`
 
-## Interrupt Via PWM OC (output compare) signal
+## 1.2. Interrupt Via PWM OC (output compare) signal
 
 - Enable `PWM global interrupt`
 - Run `HAL_TIM_PWM_Start_IT(&htimX, TIM_CHANNEL_X)` in `main()`
 - Define `void PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)`
 - Run `led_user.scheduler()` in the `PWM_PulseFinishedCallback`
 
-## LED Class
+## 1.3. LED Class
   - Init object `LED led_user{period, dimmer, Interrupt Frequency}`
   - Passthogh channel CCR with `led_user.setCCR(&htimX.Instance->CCRX);`
   - Ready to use `on()`, `off()`, `toggle()`, `set()`, `breath()`, `blink()`, `rapid()`.
 
-## C++ Host
+## 1.4. C++ Host
 - Optionally, declear `extern object` in `instance.h` to allow object sharing.
 - Only define object init in `main.cpp`.
 
 
-### Side Note
+## 1.5. Side Note
 
-Use Regular Expression: `` /\*.*/ `` to remove HAL comments in `main` and `it`
+Use Regular Expression: `` /\*.*/ `` to remove HAL comments in `main.cpp`
 
 
