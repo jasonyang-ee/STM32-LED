@@ -1,4 +1,5 @@
-[![Build Binary](https://github.com/jasonyang-ee/STM32-LED/actions/workflows/build_all.yml/badge.svg)](https://github.com/jasonyang-ee/STM32-LED/actions/workflows/build_all.yml)
+[![Build Binary](https://github.com/jasonyang-ee/STM32-LED/actions/workflows/build-all.yml/badge.svg)](https://github.com/jasonyang-ee/STM32-LED/actions/workflows/build-all.yml)
+
 
 # LED Class Use Instruction
 
