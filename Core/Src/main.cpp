@@ -36,7 +36,7 @@ static void MX_DMA_Init(void);
 
 void PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
 
-LED led_user{100, 1, 1000};
+LED led_user{1000, 1, 100};		// PWM OC interrut at 100Hz
 
 /**
  * @brief  The application entry point.
@@ -54,17 +54,20 @@ int main(void) {
 
     HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
 
-    led_user.setCCR(&htim2.Instance->CCR2);
+    led_user.setPort(&htim2.Instance->CCR2);
     led_user.breath();
     while (1) {
-        // HAL_Delay(50);
-        // led_user.scheduler();
     }
 }
+
+/* ------------------------- Call Back Functions ---------------------------------*/
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM2) led_user.scheduler();
 }
+
+
+/* ------------------------- System Start Up Functions ---------------------------*/
 
 /**
  * @brief System Clock Configuration
@@ -94,7 +97,7 @@ void SystemClock_Config(void) {
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
     RCC_OscInitStruct.PLL.PLLM = 1;
-    RCC_OscInitStruct.PLL.PLLN = 16;
+    RCC_OscInitStruct.PLL.PLLN = 40;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
     RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
     RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -128,9 +131,9 @@ static void MX_TIM2_Init(void) {
     TIM_OC_InitTypeDef sConfigOC = {0};
 
     htim2.Instance = TIM2;
-    htim2.Init.Prescaler = 320;
+    htim2.Init.Prescaler = 800-1;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 100;
+    htim2.Init.Period = 1000-1;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {

@@ -46,6 +46,7 @@ set(sources_SRCS
 	${PROJ_PATH}/Core/Src/main.cpp
 	${PROJ_PATH}/Core/Src/stm32l4xx_hal_msp.c
 	${PROJ_PATH}/Core/Src/stm32l4xx_it.c
+	${PROJ_PATH}/Core/Src/syscalls.c
 	${PROJ_PATH}/Core/Src/system_stm32l4xx.c
 	${PROJ_PATH}/Core/startup_stm32l432kcux.s
 	${PROJ_PATH}/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c
@@ -121,7 +122,7 @@ target_link_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     --specs=nosys.specs
-    -u _printf_float                # STDIO float formatting support
+    #-u _printf_float                # STDIO float formatting support
     -Wl,--start-group
     -lc
     -lm
