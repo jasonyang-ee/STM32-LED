@@ -8,10 +8,20 @@ Project Using STM32L432KC as Example. Test hardware is NUCLEO-L432KC.
 
 ## 1.1. Build This Project
 
+- Docker Build
 ```
 docker run -v "{Your_Local_Full_Path}":"/home" jasonyangee/stm32_ubuntu:latest https://github.com/jasonyang-ee/STM32-LED
 ```
+> Visit Here for More Details: https://github.com/jasonyang-ee/STM32-Dockerfile
 ![Run](doc/img/run.gif)
+
+
+- Manual Build
+```
+cmake -B build -G Ninja
+cmake --build build
+```
+
 
 ## 1.2. PWM
 
