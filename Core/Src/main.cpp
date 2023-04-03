@@ -36,7 +36,7 @@ static void MX_DMA_Init(void);
 
 void PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim);
 
-LED led_user{1000, 1, 100};		// PWM OC interrut at 100Hz
+LED led_user{1000, 100};		// PWM OC interrut at 100Hz
 
 /**
  * @brief  The application entry point.
